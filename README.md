@@ -1,26 +1,60 @@
-# DataStraw Support CRM — Vercel-ready
+# DataStraw Support CRM
 
-A full-stack customer support CRM built with **FastAPI + PostgreSQL/Neon + vanilla HTML/CSS/JavaScript**.
+A full-stack customer support CRM built with FastAPI, PostgreSQL/Neon, and vanilla HTML, CSS, and JavaScript.
 
-## Why this version fixes the Vercel problem
+The project was developed as a hiring assignment for DataStraw Technologies. It allows customers to raise support tickets and gives the support team a dashboard to manage, search, filter, and update tickets.
 
-The earlier version used SQLite as the production database. SQLite is a file, while Vercel functions run on an ephemeral/serverless filesystem. A ticket POST can therefore fail when the function cannot reliably write the SQLite file, and even a successful write should not be treated as permanent production storage.
+## Live Demo
 
-This version uses:
+https://datastraw-support-crm3.vercel.app/
 
-- **Neon PostgreSQL for Vercel production**
-- **SQLite only for local development**
-- Lazy database initialization — importing the FastAPI app never tries to create a database file
-- Database-generated integer IDs, then `TKT-001`, `TKT-002`, etc. This avoids two simultaneous Vercel requests generating the same ticket number
-- Clear database/configuration errors in the API instead of a generic unexplained 500
-- Current Vercel zero-config FastAPI deployment: no custom `vercel.json` build configuration is required
-- Same-origin frontend and `/api/...` backend
+## Features
 
-## Project structure
+* Create customer support tickets
+* Automatic ticket IDs such as `TKT-001`
+* Dashboard with ticket statistics
+* Search tickets by ID, customer, email, subject, or description
+* Filter tickets by status and priority
+* View ticket details
+* Admin password protection for ticket updates
+* Update ticket status and priority
+* Add ticket notes/history
+* Responsive frontend
+* Server-side and client-side validation
+* Health check endpoint at `/api/health`
+
+## Tech Stack
+
+**Frontend**
+
+* HTML5
+* CSS3
+* JavaScript
+
+**Backend**
+
+* Python
+* FastAPI
+* SQLAlchemy
+* Pydantic
+
+**Database**
+
+* PostgreSQL with Neon for production
+* SQLite for local development
+
+**Deployment**
+
+* Vercel
+* GitHub
+
+## Project Structure
 
 ```text
 support-crm/
+│
 ├── app.py
+│
 ├── backend/
 │   ├── __init__.py
 │   ├── config.py
@@ -29,16 +63,19 @@ support-crm/
 │   ├── schemas.py
 │   ├── crud.py
 │   └── main.py
+│
 ├── frontend/
 │   ├── index.html
 │   ├── create-ticket.html
 │   ├── ticket.html
-│   ├── css/style.css
+│   ├── css/
+│   │   └── style.css
 │   └── js/
 │       ├── api.js
 │       ├── app.js
 │       ├── create-ticket.js
 │       └── ticket.js
+│
 ├── .env.example
 ├── .gitignore
 ├── .python-version
@@ -46,254 +83,79 @@ support-crm/
 └── README.md
 ```
 
-## Features
+## How It Works
 
-- Customer ticket creation
-- Automatic ticket IDs
-- Dashboard with total/open/in-progress/closed counts
-- High-priority count
-- Search by ticket ID, customer, email, subject and description
-- Status and priority filters
-- Ticket detail page
-- Admin password protection for ticket updates
-- Status/priority updates
-- Ticket notes/history
-- Responsive frontend
-- Validation on browser and server
-- Health endpoint: `/api/health`
-- API documentation disabled because it is not required for the assessment
+Customers can create a support ticket by entering their details and explaining the issue.
 
----
+The support team can then use the dashboard to:
 
-# DEPLOY TO VERCEL
+* View tickets
+* Search and filter tickets
+* Check ticket status and priority
+* Open ticket details
+* Update ticket information
+* Add notes
 
-## Step 1 — Put this project in GitHub
-
-Create a new repository, for example:
+Ticket status follows a simple workflow:
 
 ```text
-datastraw-support-crm
+Open → In Progress → Closed
 ```
 
-Upload the **contents of this folder**, not the ZIP file itself.
+## Database
 
-Your GitHub repository root should contain:
+For local development, the application can use SQLite.
 
-```text
-app.py
-backend/
-frontend/
-requirements.txt
-.python-version
-.env.example
-.gitignore
-README.md
+For production, the application uses Neon PostgreSQL because Vercel uses serverless functions and does not provide persistent storage for SQLite files.
+
+Ticket IDs are generated from the database ID, which prevents duplicate ticket numbers when multiple requests are made at the same time.
+
+## Environment Variables
+
+Create a `.env` file for local development when required.
+
+```env
+DATABASE_URL=
+ADMIN_PASSWORD=
+APP_NAME=DataStraw Support
+APP_ENV=development
+ALLOWED_ORIGINS=*
 ```
 
-Do not upload `.env`.
+For Vercel production, `DATABASE_URL` should contain the Neon PostgreSQL connection string and `ADMIN_PASSWORD` should contain the admin password.
 
----
+Do not commit `.env` to GitHub.
 
-## Step 2 — Create a Neon PostgreSQL database
+## Run Locally
 
-Vercel's current Marketplace provides a Neon PostgreSQL integration.
+Clone the repository:
 
-In Vercel:
-
-1. Open your Vercel dashboard.
-2. Open the project.
-3. Go to **Storage / Marketplace integrations**.
-4. Add **Neon**.
-5. Create a new Neon database.
-6. Allow the integration to add the database environment variable.
-
-Vercel's Neon integration provides a managed PostgreSQL database and supports a Free Plan. The connection string is normally exposed as `DATABASE_URL`.
-
-If Vercel gives you a connection string manually, it should look similar to:
-
-```text
-postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
+```bash
+git clone https://github.com/madhu8281/datastraw-support-crm.git
+cd datastraw-support-crm
 ```
-
-Do not paste your real password into GitHub or into the source code.
-
----
-
-## Step 3 — Add the admin password
-
-In:
-
-**Vercel → Project → Settings → Environment Variables**
-
-add:
-
-```text
-ADMIN_PASSWORD
-```
-
-Example:
-
-```text
-ADMIN_PASSWORD=your-strong-admin-password
-```
-
-Use your own password.
-
-The browser never contains this password in the source code. The admin enters it in the dashboard and the backend verifies it.
-
----
-
-## Step 4 — Redeploy
-
-After connecting Neon and adding `ADMIN_PASSWORD`:
-
-1. Go to **Deployments**
-2. Redeploy the latest commit
-
-There is intentionally **no old `vercel.json`** in this version. Current Vercel FastAPI support can detect a FastAPI application directly, and `app.py` is the explicit root entrypoint.
-
----
-
-# Step 5 — Test the deployment BEFORE opening the ticket form
-
-Suppose Vercel gives you:
-
-```text
-https://your-project.vercel.app
-```
-
-Open:
-
-```text
-https://your-project.vercel.app/api/health
-```
-
-You should get:
-
-```json
-{
-  "status": "ok",
-  "database": "connected",
-  "app": "DataStraw Support"
-}
-```
-
-### If `/api/health` says database unavailable
-
-Do not test ticket creation yet.
-
-Check:
-
-**Vercel → Settings → Environment Variables**
-
-and confirm:
-
-```text
-DATABASE_URL
-ADMIN_PASSWORD
-```
-
-exist for the **Production** environment.
-
-Then redeploy.
-
----
-
-# Step 6 — Test ticket creation
-
-Open:
-
-```text
-https://your-project.vercel.app/create-ticket.html
-```
-
-Fill in:
-
-- Customer name
-- Email
-- Subject
-- Description
-- Priority
-
-Click **Create ticket**.
-
-Expected result:
-
-```text
-Ticket TKT-001 created.
-```
-
-Then the ticket detail page should open.
-
-Create another:
-
-```text
-TKT-002
-```
-
-The ticket IDs are generated from the database row ID, so simultaneous Vercel requests cannot both calculate the same next ticket number.
-
----
-
-# Step 7 — Test the dashboard
-
-Open:
-
-```text
-https://your-project.vercel.app/
-```
-
-You should see the ticket.
-
-Test:
-
-- Search
-- Status filter
-- Priority filter
-- Ticket details
-- Admin unlock
-- Status update
-- Priority update
-- Add note
-
----
-
-# Local development
-
-You do NOT need PostgreSQL just to run the project locally.
-
-If `DATABASE_URL` is empty, the application automatically uses:
-
-```text
-support_crm.db
-```
-
-locally.
 
 Create a virtual environment:
 
-### Windows
-
-```powershell
+```bash
 python -m venv venv
+```
+
+Windows:
+
+```bash
 venv\Scripts\activate
 ```
 
 Install dependencies:
 
-```powershell
+```bash
 pip install -r requirements.txt
 ```
 
-Copy the example environment:
+Run the application:
 
-```powershell
-copy .env.example .env
-```
-
-Run:
-
-```powershell
+```bash
 uvicorn app:app --reload
 ```
 
@@ -303,235 +165,66 @@ Open:
 http://127.0.0.1:8000
 ```
 
-The local SQLite database is intentionally only a development convenience. Production must use PostgreSQL.
+## API
 
----
+Main endpoints include:
 
-# Environment variables
-
-| Variable | Local | Vercel |
-|---|---|---|
-| `DATABASE_URL` | Optional; empty = SQLite | **Required; Neon PostgreSQL** |
-| `ADMIN_PASSWORD` | Optional fallback | **Required/recommended** |
-| `APP_NAME` | Optional | Optional |
-| `APP_ENV` | Optional | Optional |
-| `ALLOWED_ORIGINS` | `*` | Usually `*` because frontend/API share the same domain |
-
----
-
-# Database design
-
-## tickets
-
-| Column | Purpose |
-|---|---|
-| `id` | Database-generated primary key |
-| `ticket_id` | Public ID such as `TKT-001` |
-| `customer_name` | Customer |
-| `customer_email` | Customer email |
-| `subject` | Ticket subject |
-| `description` | Problem description |
-| `status` | Open / In Progress / Closed |
-| `priority` | Low / Medium / High |
-| `created_at` | UTC creation time |
-| `updated_at` | UTC update time |
-
-## notes
-
-| Column | Purpose |
-|---|---|
-| `id` | Note primary key |
-| `ticket_id` | Related ticket |
-| `note_text` | Agent note |
-| `created_at` | UTC note time |
-
----
-
-# API
-
-### Health
-
-```http
-GET /api/health
-```
-
-### Create ticket
-
-```http
-POST /api/tickets
+```text
+GET    /api/health
+GET    /api/tickets
+POST   /api/tickets
+GET    /api/tickets/{ticket_id}
+PUT    /api/tickets/{ticket_id}
 ```
 
 Example:
 
-```json
-{
-  "customer_name": "Madhavi Lokhande",
-  "customer_email": "madhavi@example.com",
-  "subject": "Unable to login",
-  "description": "I cannot access my account.",
-  "priority": "High"
-}
+```text
+GET /api/tickets?status=Open
+GET /api/tickets?priority=High
+GET /api/tickets?search=login
 ```
 
-### List tickets
+The API documentation is disabled because it is not required for the assessment.
 
-```http
-GET /api/tickets
-```
+## Deployment
 
-Filters:
+The application is deployed on Vercel with Neon PostgreSQL as the production database.
+
+The frontend and backend use the same Vercel domain, so API requests are made through:
 
 ```text
-/api/tickets?status=Open
-/api/tickets?priority=High
-/api/tickets?search=login
+/api/...
 ```
 
-### Ticket detail
-
-```http
-GET /api/tickets/TKT-001
-```
-
-### Admin update
-
-```http
-PUT /api/tickets/TKT-001
-```
-
-Header:
+Before testing ticket creation after deployment, check:
 
 ```text
-X-Admin-Password: your-password
+https://your-domain.vercel.app/api/health
 ```
 
-Body:
+A successful response should show that the database is connected.
 
-```json
-{
-  "status": "In Progress",
-  "priority": "High",
-  "notes": "Customer has been contacted."
-}
-```
+## Future Improvements
 
----
+* User authentication
+* Support agent accounts
+* Ticket assignment
+* Email notifications
+* Ticket comments
+* File attachments
+* Reports and analytics
+* PostgreSQL-based production scaling
+* Automated tests
 
-# Important Vercel rule
+## Developer
 
-Do not change production back to:
+**Madhavi Lokhande**
 
-```text
-sqlite:///...
-```
+GitHub: https://github.com/madhu8281
 
-Vercel is not a persistent SQLite server.
+LinkedIn: https://linkedin.com/in/madhavilokhande
 
-Use:
+## License
 
-```text
-DATABASE_URL=postgresql://...
-```
-
-with Neon for the deployed application.
-
-The frontend does not need a separate backend URL. It continues using:
-
-```javascript
-/api/tickets
-```
-
-because both the frontend and FastAPI backend are deployed under the same Vercel domain.
-
----
-
-# Troubleshooting
-
-## "Something went wrong on the server" when raising a ticket
-
-Open:
-
-```text
-/api/health
-```
-
-If it does not say:
-
-```json
-"database": "connected"
-```
-
-fix `DATABASE_URL` first.
-
-If health is OK but ticket creation still fails:
-
-1. Open Vercel → Deployments
-2. Open the latest deployment
-3. Open **Functions / Runtime Logs**
-4. Look for a database error
-5. Make sure the Neon database has not been deleted or disconnected
-
-The new backend logs the actual server-side exception while returning a safe message to the customer.
-
-## "DATABASE_URL is not configured"
-
-Add `DATABASE_URL` to the Vercel project Environment Variables and redeploy.
-
-## Admin update returns 401
-
-The `ADMIN_PASSWORD` in Vercel must exactly match the password entered in the dashboard.
-
-After changing the password, reload the browser and unlock admin again.
-
-## Frontend opens but API does not work
-
-Test:
-
-```text
-/api/health
-```
-
-If that endpoint works, the backend is running and the issue is likely a frontend request or browser cache. Hard refresh the page.
-
----
-
-# Why PostgreSQL is used here
-
-The assessment requires a deployed full-stack CRM where tickets must persist.
-
-SQLite is excellent for a small local application, but its database is a file. A serverless deployment should use a real persistent database service.
-
-Neon PostgreSQL gives this project:
-
-- Persistent ticket data
-- Safe concurrent writes
-- No dependency on the Vercel function filesystem
-- Database access through `DATABASE_URL`
-- Easy Vercel integration
-- A path that can grow beyond a demo
-
-For this assessment, this keeps the architecture simple:
-
-```text
-Browser
-   ↓
-Vercel
-   ↓
-FastAPI
-   ↓
-Neon PostgreSQL
-```
-
-
-## Vercel routing fix
-
-This version includes `api/index.py` as the explicit Vercel FastAPI entrypoint.
-The API routes intentionally include `/api` (for example `/api/tickets`).
-After deployment verify:
-
-```text
-https://YOUR-DOMAIN.vercel.app/api/health
-https://YOUR-DOMAIN.vercel.app/api/tickets
-```
-
-Use `vercel dev` locally to test the same routing Vercel uses.
+This project was developed as a hiring assignment for DataStraw Technologies.
