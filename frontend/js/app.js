@@ -1,3 +1,4 @@
+
 /* DataStraw Support dashboard. */
 const searchInput = document.getElementById("search-input");
 const statusFilter = document.getElementById("status-filter");
@@ -13,6 +14,8 @@ const adminUnlockBtn = document.getElementById("dashboard-unlock-btn");
 const adminPassword = document.getElementById("dashboard-admin-password");
 const adminError = document.getElementById("dashboard-admin-error");
 const adminStatus = document.getElementById("admin-status");
+const adminDashboard = document.getElementById("admin-dashboard");
+const customerPortal = document.getElementById("customer-portal");
 const ADMIN_SESSION_KEY = "datastraw_admin_password";
 
 function debounce(fn, delay) {
@@ -29,13 +32,16 @@ function setAdminMode(password) {
   adminStatus.className = "admin-status unlocked";
   adminLoginBtn.textContent = "Lock admin";
   adminLogin.classList.add("hidden");
+  show(adminDashboard);
+  hide(customerPortal);
 }
 function lockAdmin() {
   try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch {}
   adminStatus.textContent = "Admin locked";
   adminStatus.className = "admin-status locked";
   adminLoginBtn.textContent = "Admin access";
-  loadTickets();
+  hide(adminDashboard);
+  show(customerPortal);
 }
 
 adminLoginBtn.addEventListener("click", () => {
@@ -52,7 +58,7 @@ adminUnlockBtn.addEventListener("click", async () => {
   try {
     await api.verifyAdmin(value);
     setAdminMode(value);
-    loadTickets();
+    await Promise.all([loadStats(), loadTickets()]);
   } catch (error) {
     adminError.textContent = error.message;
   } finally {
@@ -142,6 +148,20 @@ searchInput.addEventListener("input", debounce(loadTickets, 300));
 statusFilter.addEventListener("change", loadTickets);
 priorityFilter.addEventListener("change", loadTickets);
 
-if (getAdminPassword()) setAdminMode(getAdminPassword());
-loadStats();
-loadTickets();
+const storedAdminPassword = getAdminPassword();
+if (storedAdminPassword) {
+  // Re-verify the stored password on every page load. The backend is the
+  // authority; a client-side session flag alone never grants access.
+  api.verifyAdmin(storedAdminPassword)
+    .then(async () => {
+      setAdminMode(storedAdminPassword);
+      await Promise.all([loadStats(), loadTickets()]);
+    })
+    .catch(() => {
+      lockAdmin();
+    });
+} else {
+  hide(adminDashboard);
+  show(customerPortal);
+}
+
