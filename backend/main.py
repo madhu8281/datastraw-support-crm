@@ -141,7 +141,11 @@ def create_ticket(
     )
 
 
-@app.get("/api/tickets", response_model=List[schemas.TicketListItem])
+@app.get(
+    "/api/tickets",
+    response_model=List[schemas.TicketListItem],
+    dependencies=[Depends(require_admin)],
+)
 def list_tickets(
     db: Session = Depends(get_db),
     status: Optional[schemas.Status] = Query(default=None),
@@ -156,12 +160,20 @@ def list_tickets(
     )
 
 
-@app.get("/api/stats", response_model=schemas.StatsOut)
+@app.get(
+    "/api/stats",
+    response_model=schemas.StatsOut,
+    dependencies=[Depends(require_admin)],
+)
 def ticket_stats(db: Session = Depends(get_db)):
     return crud.get_stats(db)
 
 
-@app.get("/api/tickets/{ticket_id}", response_model=schemas.TicketDetail)
+@app.get(
+    "/api/tickets/{ticket_id}",
+    response_model=schemas.TicketDetail,
+    dependencies=[Depends(require_admin)],
+)
 def get_ticket(ticket_id: str, db: Session = Depends(get_db)):
     ticket = crud.get_ticket_by_ticket_id(db, ticket_id)
     if ticket is None:
