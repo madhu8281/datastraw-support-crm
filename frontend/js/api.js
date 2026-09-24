@@ -98,7 +98,11 @@ const api = {
   },
 
   getTicket(ticketId) {
-    return apiRequest("/tickets/" + encodeURIComponent(ticketId));
+    let adminPassword = null;
+    try { adminPassword = sessionStorage.getItem("datastraw_admin_password"); } catch {}
+    return apiRequest("/tickets/" + encodeURIComponent(ticketId), {
+      headers: adminPassword ? { "X-Admin-Password": adminPassword } : {},
+    });
   },
 
   createTicket(data) {
