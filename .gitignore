@@ -1,0 +1,21 @@
+# --- Python ---------------------------------------------------------------
+venv/                 # the virtual environment: thousands of files, rebuilt
+.venv/                #   by anyone from requirements.txt. Never commit it.
+__pycache__/          # compiled bytecode, regenerated automatically
+*.py[cod]
+*.egg-info/
+
+# --- Secrets and config ---------------------------------------------------
+.env                  # real configuration/secrets. .env.example is committed instead.
+
+# --- Database -------------------------------------------------------------
+*.db                  # the SQLite file holds test data, not source code.
+*.sqlite3             # Committing it would also cause merge conflicts.
+
+# --- Editors --------------------------------------------------------------
+.vscode/
+.idea/
+
+# --- OS -------------------------------------------------------------------
+.DS_Store
+Thumbs.db

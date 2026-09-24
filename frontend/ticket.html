@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ticket | DataStraw Support</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html" aria-label="DataStraw Support home">
+        <span class="brand-mark" aria-hidden="true">DS</span>
+        <span class="brand-text"><strong>DataStraw</strong><small>Support</small></span>
+      </a>
+      <nav class="site-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="create-ticket.html">Raise ticket</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <a class="back-link" href="index.html">← Back to tickets</a>
+
+    <div id="error-box" class="alert alert-error hidden"></div>
+    <div id="success-box" class="alert alert-success hidden"></div>
+
+    <!-- Shown while GET /api/tickets/{id} is running -->
+    <div id="loading-state" class="card state">
+      <span class="spinner"></span>
+      <p style="margin-top:10px">Loading ticket…</p>
+    </div>
+
+    <!-- Shown if the ticket id in the URL does not exist (404) -->
+    <div id="notfound-state" class="card state hidden">
+      <h3>Ticket not found</h3>
+      <p id="notfound-text">That ticket ID does not exist in the system.</p>
+      <a href="index.html" class="btn btn-primary">Back to tickets</a>
+    </div>
+
+    <div id="detail" class="hidden">
+      <div class="detail-grid">
+
+        <!-- LEFT: the ticket itself and its note history -->
+        <div>
+          <section class="card panel">
+            <div class="detail-head">
+              <div>
+                <span class="ticket-id" id="t-id"></span>
+                <h1 class="subject" id="t-subject"></h1>
+              </div>
+              <div class="badge-row">
+                <span id="t-priority"></span>
+                <span id="t-status"></span>
+              </div>
+            </div>
+
+            <dl class="meta-list">
+              <dt>Customer</dt><dd id="t-name"></dd>
+              <dt>Email</dt><dd id="t-email"></dd>
+              <dt>Created</dt><dd id="t-created"></dd>
+              <dt>Last updated</dt><dd id="t-updated"></dd>
+            </dl>
+
+            <h2 style="margin-top:20px">Description</h2>
+            <div class="description-box" id="t-description"></div>
+          </section>
+
+          <section class="card panel">
+            <h2>Notes <span class="cell-muted" id="note-count"></span></h2>
+            <div id="notes-list"></div>
+          </section>
+        </div>
+
+        <!-- RIGHT: the actions a support agent takes -->
+        <aside>
+          <!-- LOCKED state: shown by default and whenever the stored
+               password turns out to be wrong. Anyone can view a ticket;
+               only someone who knows the admin password can change it. -->
+          <section class="card panel" id="admin-lock">
+            <h2>Admin controls</h2>
+            <p class="cell-muted" style="margin-top:-8px">
+              Admin access is required to change status, priority or add internal notes.
+            </p>
+            <div class="field">
+              <label for="admin-password-input">Admin password</label>
+              <input
+                type="password"
+                id="admin-password-input"
+                class="input"
+                placeholder="Enter admin password"
+                autocomplete="current-password"
+              />
+              <div class="field-error" id="error-admin-password"></div>
+            </div>
+            <button type="button" class="btn btn-primary" id="unlock-btn" style="width:100%">
+              Unlock
+            </button>
+          </section>
+
+          <!-- UNLOCKED state: the real update form, hidden until the
+               correct password has been entered. -->
+          <section class="card panel hidden" id="admin-controls">
+            <div class="detail-head" style="margin-bottom:10px">
+              <h2 style="margin:0">Update ticket</h2>
+              <button type="button" class="btn btn-secondary btn-small" id="lock-btn">Lock</button>
+            </div>
+            <form id="update-form" novalidate>
+              <div class="field">
+                <label for="status-select">Status</label>
+                <select id="status-select" class="select" style="width:100%">
+                  <option value="Open">Open</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="priority-select">Priority</label>
+                <select id="priority-select" class="select" style="width:100%">
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="note-input">Add a note</label>
+                <textarea id="note-input" class="textarea" placeholder="Called the customer, waiting for their reply."></textarea>
+                <div class="help">Notes are kept as a history. Nothing is overwritten.</div>
+                <div class="field-error" id="error-note"></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" id="save-btn" style="width:100%">Save changes</button>
+            </form>
+          </section>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/ticket.js"></script>
+</body>
+</html>
