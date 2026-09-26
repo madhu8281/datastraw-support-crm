@@ -8,6 +8,10 @@ The project was developed as a hiring assignment for DataStraw Technologies. It 
 
 https://datastraw-support-crm3.vercel.app/
 
+
+## Admin Password
+DataStraw@2026
+
 ## Features
 
 * Create customer support tickets
