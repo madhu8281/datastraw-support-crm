@@ -2,7 +2,7 @@
    create-ticket.js - the new ticket form (create-ticket.html)
 
    Flow: validate in the browser -> POST /api/tickets -> show the new
-   ticket ID. Ticket details are intentionally admin-only.
+   ticket ID -> open the ticket detail page.
    ========================================================================== */
 
 const form = document.getElementById("ticket-form");
@@ -87,13 +87,14 @@ form.addEventListener("submit", async (event) => {
 
     showMessage(
       "success-box",
-      "Ticket " + created.ticket_id + " created successfully. Our support team can now review it."
+      "Ticket " + created.ticket_id + " created. Opening it now…"
     );
-
-    // Ticket details are admin-only, so do not redirect to ticket.html.
     form.reset();
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Create another ticket";
+
+    // Short pause so the agent actually sees the generated ID.
+    setTimeout(() => {
+      window.location.href = "ticket.html?id=" + encodeURIComponent(created.ticket_id);
+    }, 1200);
   } catch (error) {
     showMessage("error-box", error.message);
     submitBtn.disabled = false;
